@@ -1,0 +1,463 @@
+{
+	"info": {
+		"_postman_id": "de032243-ada0-4066-8fbe-9aa7cff944f6",
+		"name": "PET positive create-update scenario",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "15341420"
+	},
+	"item": [
+		{
+			"name": "CREATE - Add a new pet to the store",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"//generate test data for request\r",
+							"\r",
+							"const petId = Math.floor(Math.random() * 10000) + 1\r",
+							"pm.collectionVariables.set(\"petId\", petId);\r",
+							"\r",
+							"const names = [\"Alice\", \"Bob\", \"Tom\"];\r",
+							"const randomName = names[Math.floor(Math.random() * names.length)];\r",
+							"pm.collectionVariables.set(\"petName\", randomName);\r",
+							"\r",
+							"\r",
+							"\r",
+							"const categoryId = Math.floor(Math.random() * 10000) + 1\r",
+							"pm.collectionVariables.set(\"categoryId\", categoryId);\r",
+							"\r",
+							"const categories = [\"Cat\", \"Dog\", \"Fish\"];\r",
+							"const randomCategory = categories[Math.floor(Math.random() * categories.length)];\r",
+							"pm.collectionVariables.set(\"categoryName\", randomCategory);\r",
+							"\r",
+							"\r",
+							"//generate tags - random numbers because it is array in the model\r",
+							"const numberOfTags = Math.floor(Math.random() * 5) + 1;\r",
+							"let tagsArray = [];\r",
+							"for (let index = 1; index <= numberOfTags; index++) { \r",
+							"    const tagId = Math.floor(Math.random() * 10000) + 1;\r",
+							"    const tagName = `Tag_${tagId}`;\r",
+							"    \r",
+							"    tagsArray.push({\r",
+							"        id: tagId,\r",
+							"        name: tagName\r",
+							"    });\r",
+							"}\r",
+							"pm.collectionVariables.set(\"tags\", JSON.stringify(tagsArray));\r",
+							"\r",
+							"\r",
+							"\r",
+							"const statuses = [\"available\", \"pending\", \"sold\"];\r",
+							"const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];\r",
+							"pm.collectionVariables.set(\"status\", randomStatus);\r",
+							"\r",
+							"setTimeout(function(){}, 5000)\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//verify that CREATE request was sent successfully and 200 OK code was received\r",
+							"\r",
+							"const responseData = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "api_key",
+						"value": "special-key",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"id\": \"{{petId}}\",\r\n  \"category\": {\r\n    \"id\": {{categoryId}},\r\n    \"name\": \"{{categoryName}}\"\r\n  },\r\n  \"name\": \"{{petName}}\",\r\n  \"photoUrls\": [\r\n    \"string\"\r\n  ],\r\n  \"tags\": {{tags}},\r\n  \"status\": \"{{status}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://petstore.swagger.io/v2/pet",
+					"protocol": "https",
+					"host": [
+						"petstore",
+						"swagger",
+						"io"
+					],
+					"path": [
+						"v2",
+						"pet"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET - Find pet by id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//verify that we get the same date as was send in previous CREATE pet request\r",
+							"\r",
+							"const responseData = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Category information in response is correct\", function () {\r",
+							"    const expectedCategoryId = pm.variables.get(\"categoryId\");\r",
+							"    pm.expect(responseData.category.id).to.eql(expectedCategoryId);\r",
+							"\r",
+							"    const expectedCategoryName = pm.variables.get(\"categoryName\");\r",
+							"    pm.expect(responseData.category.name).to.eql(expectedCategoryName);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Pet information in response is correct\", function () {\r",
+							"    const expectedPetName = pm.variables.get(\"petName\");\r",
+							"    pm.expect(responseData.name).to.eql(expectedPetName);\r",
+							"\r",
+							"    //URL validation will be added later\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Tag information in response is correct\", function () {\r",
+							"    const expectedTags = JSON.parse(pm.variables.get(\"tags\"));\r",
+							"    pm.expect(responseData.tags).to.eql(expectedTags);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Status information in response is correct\", function () {\r",
+							"    const expectedStatus = pm.variables.get(\"status\");\r",
+							"    pm.expect(responseData.status).to.eql(expectedStatus);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"packages": {},
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "api_key",
+						"value": "special-key",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://petstore.swagger.io/v2/pet/{{petId}}",
+					"protocol": "https",
+					"host": [
+						"petstore",
+						"swagger",
+						"io"
+					],
+					"path": [
+						"v2",
+						"pet",
+						"{{petId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "UPDATE - Update an existing pet",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"//generate new test data for request\r",
+							"\r",
+							"\r",
+							"const names = [\"newAlice\", \"newBob\", \"newTom\"];\r",
+							"const randomName = names[Math.floor(Math.random() * names.length)];\r",
+							"pm.collectionVariables.set(\"newPetName\", randomName);\r",
+							"\r",
+							"\r",
+							"\r",
+							"const categoryId = Math.floor(Math.random() * 10000) + 1\r",
+							"pm.collectionVariables.set(\"newCategoryId\", categoryId);\r",
+							"\r",
+							"const categories = [\"newCat\", \"newDog\", \"newFish\"];\r",
+							"const randomCategory = categories[Math.floor(Math.random() * categories.length)];\r",
+							"pm.collectionVariables.set(\"newCategoryName\", randomCategory);\r",
+							"\r",
+							"\r",
+							"\r",
+							"const numberOfTags = Math.floor(Math.random() * 5) + 1;\r",
+							"let tagsArray = [];\r",
+							"for (let index = 1; index <= numberOfTags; index++) { \r",
+							"    const tagId = Math.floor(Math.random() * 10000) + 1;\r",
+							"    const tagName = `newTag_${tagId}`;\r",
+							"    \r",
+							"    tagsArray.push({\r",
+							"        id: tagId,\r",
+							"        name: tagName\r",
+							"    });\r",
+							"}\r",
+							"pm.collectionVariables.set(\"newTags\", JSON.stringify(tagsArray));\r",
+							"\r",
+							"\r",
+							"\r",
+							"const statuses = [\"available\", \"pending\", \"sold\"];\r",
+							"const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];\r",
+							"pm.collectionVariables.set(\"newStatus\", randomStatus);\r",
+							"\r",
+							"\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//verify that UPDATE request was sent successfully and 200 OK code was received\r",
+							"\r",
+							"const responseData = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"id\": {{petId}},\r\n  \"category\": {\r\n    \"id\": {{newCategoryId}},\r\n    \"name\": \"{{newCategoryName}}\"\r\n  },\r\n  \"name\": \"{{newPetName}}\",\r\n  \"photoUrls\": [\r\n    \"string\"\r\n  ],\r\n  \"tags\": {{newTags}},\r\n  \"status\": \"{{newStatus}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://petstore.swagger.io/v2/pet",
+					"protocol": "https",
+					"host": [
+						"petstore",
+						"swagger",
+						"io"
+					],
+					"path": [
+						"v2",
+						"pet"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET - Find pet by id after update",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//verify that we get the same date as was send in previous CREATE pet request\r",
+							"\r",
+							"const responseData = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Category information in response is correct\", function () {\r",
+							"    const expectedCategoryId = pm.variables.get(\"newCategoryId\");\r",
+							"    pm.expect(responseData.category.id).to.eql(expectedCategoryId);\r",
+							"\r",
+							"    const expectedCategoryName = pm.variables.get(\"newCategoryName\");\r",
+							"    pm.expect(responseData.category.name).to.eql(expectedCategoryName);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Pet information in response is correct\", function () {\r",
+							"    const expectedPetName = pm.variables.get(\"newPetName\");\r",
+							"    pm.expect(responseData.name).to.eql(expectedPetName);\r",
+							"\r",
+							"    //URL validation\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Tag information in response is correct\", function () {\r",
+							"    const expectedTags = JSON.parse(pm.variables.get(\"newTags\"));\r",
+							"    pm.expect(responseData.tags).to.eql(expectedTags);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Status information in response is correct\", function () {\r",
+							"    const expectedStatus = pm.variables.get(\"newStatus\");\r",
+							"    pm.expect(responseData.status).to.eql(expectedStatus);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://petstore.swagger.io/v2/pet/{{petId}}",
+					"protocol": "https",
+					"host": [
+						"petstore",
+						"swagger",
+						"io"
+					],
+					"path": [
+						"v2",
+						"pet",
+						"{{petId}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "myPetId",
+			"value": "",
+			"type": "default"
+		},
+		{
+			"key": "myPetId",
+			"value": ""
+		},
+		{
+			"key": "categoryId",
+			"value": ""
+		},
+		{
+			"key": "categoryName",
+			"value": ""
+		},
+		{
+			"key": "petName",
+			"value": ""
+		},
+		{
+			"key": "petId",
+			"value": ""
+		},
+		{
+			"key": "tagId",
+			"value": ""
+		},
+		{
+			"key": "tagName",
+			"value": ""
+		},
+		{
+			"key": "status",
+			"value": ""
+		},
+		{
+			"key": "tagId_1",
+			"value": ""
+		},
+		{
+			"key": "tagName_1",
+			"value": ""
+		},
+		{
+			"key": "tagId_2",
+			"value": ""
+		},
+		{
+			"key": "tagName_2",
+			"value": ""
+		},
+		{
+			"key": "tagId_3",
+			"value": ""
+		},
+		{
+			"key": "tagName_3",
+			"value": ""
+		},
+		{
+			"key": "tags",
+			"value": ""
+		},
+		{
+			"key": "newPetName",
+			"value": ""
+		},
+		{
+			"key": "newCategoryId",
+			"value": ""
+		},
+		{
+			"key": "newCategoryName",
+			"value": ""
+		},
+		{
+			"key": "newTags",
+			"value": ""
+		},
+		{
+			"key": "newStatus",
+			"value": ""
+		}
+	]
+}
